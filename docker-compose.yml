@@ -1,0 +1,41 @@
+version: '3.9'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: yarn start:dev
+    env_file:
+      - src/.env.stage.dev
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgresql-master
+    restart: always
+    networks:
+      - app-tier
+
+  postgresql-master:
+    image: docker.io/bitnami/postgresql:14
+    volumes:
+      - 'postgresql_master_data:/bitnami/postgresql'
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=Blue_Berry_1999
+      - POSTGRESQL_DATABASE=task-management
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '5432:5432'
+    networks:
+      - app-tier
+
+volumes:
+  postgresql_master_data:
+    driver: local
+# To connect postgresql-master you need to get ip address them. Using docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container-ID>
